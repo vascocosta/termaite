@@ -1,6 +1,7 @@
 mod config;
 
 use anyhow::{Context, Result};
+use config::CONF_FILE;
 use config::Config;
 use gemini_client_rs::{
     GeminiClient,
@@ -14,8 +15,6 @@ use std::{
 };
 use termimad::*;
 
-const CONF_FILE: &str = ".termaite.json";
-
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let mut config = Config::from_file(
@@ -24,6 +23,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             .join(CONF_FILE),
     )
     .context("Could not parse config file.")?;
+
     let client = GeminiClient::new(mem::take(&mut config.api_key));
 
     main_loop(&mut config, &client).await?;
