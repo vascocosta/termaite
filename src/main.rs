@@ -46,12 +46,6 @@ async fn main_loop(config: &mut Config, client: &GeminiClient) -> Result<(), Box
             .map(ContentPart::Text)
             .collect(),
         role: Role::System,
-        // parts: profile
-        //     .system_prompt
-        //     .iter_mut()
-        //     .map(|p| ContentPart::Text(mem::take(p)))
-        //     .collect(),
-        // role: Role::System,
     };
 
     let mut skin = MadSkin::default();
