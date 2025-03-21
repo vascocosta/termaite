@@ -9,17 +9,16 @@ use gemini_client_rs::{
 };
 use serde_json::json;
 use std::{
-    error::Error,
     io::{self, Write},
     mem,
 };
 use termimad::*;
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
+async fn main() -> Result<()> {
     let mut config = Config::from_file(
         dirs::home_dir()
-            .ok_or("Could not find home dir.")?
+            .context("Could not find home dir.")?
             .join(CONF_FILE),
     )
     .context("Could not parse config file.")?;
@@ -31,11 +30,11 @@ async fn main() -> Result<(), Box<dyn Error>> {
     Ok(())
 }
 
-async fn main_loop(config: &mut Config, client: &GeminiClient) -> Result<(), Box<dyn Error>> {
+async fn main_loop(config: &mut Config, client: &GeminiClient) -> Result<()> {
     let profile = config
         .profiles
         .get_mut(&config.active_profile)
-        .ok_or("Could not get profile.")?;
+        .context("Could not get profile.")?;
 
     let mut history: Vec<Content> = Vec::new();
     let mut input = String::new();
@@ -89,7 +88,7 @@ async fn main_loop(config: &mut Config, client: &GeminiClient) -> Result<(), Box
     Ok(())
 }
 
-fn prompt(input: &mut String) -> Result<bool, Box<dyn Error>> {
+fn prompt(input: &mut String) -> Result<bool> {
     print!("> ");
     io::stdout().flush()?;
     io::stdin().read_line(input)?;
