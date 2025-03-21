@@ -370,8 +370,9 @@ dependencies = [
 
 [[package]]
 name = "gemini_client_rs"
-version = "0.2.0"
-source = "git+https://github.com/vascocosta/gemini-client?branch=system-instruction#6496b4b5c4d5fdf417b6857a135561290485e4da"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "de8aa8b3224e65b5cef8f3859b2b4978bc123a4ccfd3989857551043609b2c56"
 dependencies = [
  "dotenvy",
  "reqwest",
