@@ -5,7 +5,9 @@ use config::CONF_FILE;
 use config::Config;
 use gemini_client_rs::{
     GeminiClient,
-    types::{Content, ContentPart, GenerateContentRequest, PartResponse, Role},
+    types::{
+        Content, ContentPart, GenerateContentRequest, GenerateContentResponse, PartResponse, Role,
+    },
 };
 use serde_json::json;
 use std::{
@@ -70,19 +72,7 @@ async fn main_loop(config: &mut Config, client: &GeminiClient) -> Result<()> {
             .generate_content(&profile.model_name, &request)
             .await?;
 
-        if let Some(candidates) = response.candidates {
-            for candidate in candidates {
-                for part in candidate.content.parts {
-                    if let PartResponse::Text(text) = part {
-                        println!("{}", skin.term_text(&text));
-                        history.push(Content {
-                            parts: vec![ContentPart::Text(text)],
-                            role: Role::Model,
-                        });
-                    }
-                }
-            }
-        }
+        print_response(response, &skin, &mut history);
     }
 
     Ok(())
@@ -99,4 +89,20 @@ fn prompt(input: &mut String) -> Result<bool> {
     }
 
     Ok(true)
+}
+
+fn print_response(response: GenerateContentResponse, skin: &MadSkin, history: &mut Vec<Content>) {
+    if let Some(candidates) = response.candidates {
+        for candidate in candidates {
+            for part in candidate.content.parts {
+                if let PartResponse::Text(text) = part {
+                    println!("{}", skin.term_text(&text));
+                    history.push(Content {
+                        parts: vec![ContentPart::Text(text)],
+                        role: Role::Model,
+                    });
+                }
+            }
+        }
+    }
 }
