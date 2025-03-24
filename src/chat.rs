@@ -1,4 +1,4 @@
-use crate::config::Config;
+use crate::{commands::Command, config::Config};
 use anyhow::{Context, Result};
 use gemini_client_rs::{
     GeminiClient,
@@ -33,7 +33,7 @@ impl<'a> ChatSession<'a> {
         }
     }
 
-    pub async fn run(&mut self) -> Result<()> {
+    pub async fn run(&mut self) -> Result<Command> {
         let mut input = String::new();
 
         let profile = self
@@ -52,6 +52,42 @@ impl<'a> ChatSession<'a> {
         };
 
         while self.prompt(&mut input).unwrap_or_default() {
+            match input.parse() {
+                Ok(Command::Exit) => return Ok(Command::Exit),
+                Ok(Command::Help) => {
+                    input.clear();
+
+                    let usage = Command::help();
+
+                    for line in &usage {
+                        println!("--- {}", line)
+                    }
+
+                    continue;
+                }
+                Ok(Command::Profile { name }) => {
+                    input.clear();
+
+                    if name == "list" {
+                        println!("--- List of profiles: ");
+
+                        for profile_name in self.config.profiles.keys() {
+                            println!("--- {}", profile_name);
+                        }
+
+                        continue;
+                    } else {
+                        return Ok(Command::Profile { name });
+                    };
+                }
+                Ok(Command::Prompt) => (),
+                Err(error) => {
+                    input.clear();
+                    println!("--- {}", error);
+                    continue;
+                }
+            };
+
             self.history.push(Content {
                 parts: vec![ContentPart::Text(mem::take(&mut input))],
                 role: Role::User,
@@ -71,18 +107,14 @@ impl<'a> ChatSession<'a> {
             self.print_response(response);
         }
 
-        Ok(())
+        Ok(Command::Prompt)
     }
 
     fn prompt(&self, input: &mut String) -> Result<bool> {
-        print!("> ");
+        print!(">>> ");
         io::stdout().flush()?;
         io::stdin().read_line(input)?;
         println!();
-
-        if input.trim().eq_ignore_ascii_case("exit") {
-            return Ok(false);
-        }
 
         Ok(true)
     }
