@@ -53,34 +53,16 @@ impl<'a> ChatSession<'a> {
 
         while self.prompt(&mut input).unwrap_or_default() {
             match input.parse() {
-                Ok(Command::Exit) => return Ok(Command::Exit),
-                Ok(Command::Help) => {
-                    input.clear();
-
-                    let usage = Command::help();
-
-                    for line in &usage {
-                        println!("--- {}", line)
-                    }
-
-                    continue;
-                }
-                Ok(Command::Profile { name }) => {
-                    input.clear();
-
-                    if name == "list" {
-                        println!("--- List of profiles: ");
-
-                        for profile_name in self.config.profiles.keys() {
-                            println!("--- {}", profile_name);
-                        }
-
-                        continue;
-                    } else {
-                        return Ok(Command::Profile { name });
-                    };
-                }
                 Ok(Command::Prompt) => (),
+                Ok(command) => {
+                    input.clear();
+
+                    if let Some(command) = self.handle_command(command) {
+                        return Ok(command);
+                    } else {
+                        continue;
+                    }
+                }
                 Err(error) => {
                     input.clear();
                     println!("--- {}", error);
@@ -92,6 +74,8 @@ impl<'a> ChatSession<'a> {
                 parts: vec![ContentPart::Text(mem::take(&mut input))],
                 role: Role::User,
             });
+
+            input.clear();
 
             let req_json = json!(
                 {
@@ -117,6 +101,35 @@ impl<'a> ChatSession<'a> {
         println!();
 
         Ok(true)
+    }
+
+    fn handle_command(&self, command: Command) -> Option<Command> {
+        match command {
+            Command::Exit => Some(Command::Exit),
+            Command::Help => {
+                println!("--- Help:");
+
+                for line in &Command::help() {
+                    println!("--- {}", line)
+                }
+
+                None
+            }
+            Command::Profile { name } => {
+                if name == "list" {
+                    println!("--- List of profiles: ");
+
+                    for profile_name in self.config.profiles.keys() {
+                        println!("--- {}", profile_name);
+                    }
+
+                    None
+                } else {
+                    Some(Command::Profile { name })
+                }
+            }
+            Command::Prompt => None,
+        }
     }
 
     fn print_response(&mut self, response: GenerateContentResponse) {
