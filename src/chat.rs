@@ -39,7 +39,7 @@ impl<'a> ChatSession<'a> {
         let profile = match self.config.profiles.get_mut(&self.config.active_profile) {
             Some(profile) => profile,
             None => {
-                println!("Profile not found. Loading default profile...");
+                eprintln!("Profile not found. Loading default profile...");
                 self.config
                     .profiles
                     .get_mut("default")
