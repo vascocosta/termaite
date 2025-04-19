@@ -36,11 +36,17 @@ impl<'a> ChatSession<'a> {
     pub async fn run(&mut self) -> Result<Command> {
         let mut input = String::new();
 
-        let profile = self
-            .config
-            .profiles
-            .get_mut(&self.config.active_profile)
-            .context("Could not get profile.")?;
+        let profile = match self.config.profiles.get_mut(&self.config.active_profile) {
+            Some(profile) => profile,
+            None => {
+                println!("Profile not found. Loading default profile...");
+                self.config
+                    .profiles
+                    .get_mut("default")
+                    .context("Could not load any profile")?
+            }
+        };
+
         let model_name = mem::take(&mut profile.model_name);
 
         let system_instruction = Content {
