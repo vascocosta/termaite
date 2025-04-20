@@ -7,7 +7,9 @@ use std::{
     io::{BufReader, ErrorKind, Write},
     path::Path,
     process,
+    str::FromStr,
 };
+use termimad::crossterm::style::Color as TermimadColor;
 
 pub(crate) const CONF_FILE: &str = ".termaite.json";
 
@@ -16,6 +18,7 @@ pub(crate) struct Config {
     pub api_key: String,
     pub active_profile: String,
     pub profiles: HashMap<String, Profile>,
+    pub color: Color,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -23,6 +26,54 @@ pub(crate) struct Profile {
     pub model_name: String,
     pub chars: usize,
     pub system_prompt: Vec<String>,
+}
+
+#[derive(Copy, Clone, Debug, Deserialize, Serialize)]
+pub(crate) enum Color {
+    Red,
+    Blue,
+    Cyan,
+    Grey,
+    Black,
+    Green,
+    Reset,
+    White,
+    Yellow,
+}
+
+impl From<Color> for TermimadColor {
+    fn from(value: Color) -> Self {
+        match value {
+            Color::Red => TermimadColor::Red,
+            Color::Blue => TermimadColor::Blue,
+            Color::Cyan => TermimadColor::Cyan,
+            Color::Grey => TermimadColor::Grey,
+            Color::Black => TermimadColor::Black,
+            Color::Green => TermimadColor::Green,
+            Color::Reset => TermimadColor::Reset,
+            Color::White => TermimadColor::White,
+            Color::Yellow => TermimadColor::Yellow,
+        }
+    }
+}
+
+impl FromStr for Color {
+    type Err = String;
+
+    fn from_str(s: &str) -> std::result::Result<Self, Self::Err> {
+        match s {
+            "Red" | "red" => Ok(Color::Red),
+            "Blue" | "blue" => Ok(Color::Blue),
+            "Cyan" | "cyan" => Ok(Color::Cyan),
+            "Grey" | "grey" => Ok(Color::Grey),
+            "Black" | "black" => Ok(Color::Black),
+            "Green" | "green" => Ok(Color::Green),
+            "Reset" | "reset" => Ok(Color::Reset),
+            "White" | "white" => Ok(Color::White),
+            "Yellow" | "yellow" => Ok(Color::Yellow),
+            _ => Ok(Color::White),
+        }
+    }
 }
 
 impl Config {
@@ -86,6 +137,7 @@ impl Default for Config {
             api_key: String::from("YOUR_API_KEY"),
             active_profile: String::from("default"),
             profiles,
+            color: Color::Blue,
         }
     }
 }

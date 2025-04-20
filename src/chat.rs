@@ -1,4 +1,7 @@
-use crate::{commands::Command, config::Config};
+use crate::{
+    commands::Command,
+    config::{Color, Config},
+};
 use anyhow::{Context, Result};
 use gemini_client_rs::{
     GeminiClient,
@@ -23,7 +26,9 @@ pub(crate) struct ChatSession<'a> {
 impl<'a> ChatSession<'a> {
     pub fn new(config: &'a mut Config, client: GeminiClient) -> Self {
         let mut skin = MadSkin::default();
-        skin.set_fg(termimad::crossterm::style::Color::Blue);
+        let fg_color = config.color.into();
+
+        skin.set_fg(fg_color);
 
         Self {
             config,
@@ -109,7 +114,7 @@ impl<'a> ChatSession<'a> {
         Ok(true)
     }
 
-    fn handle_command(&self, command: Command) -> Option<Command> {
+    fn handle_command(&mut self, command: Command) -> Option<Command> {
         match command {
             Command::Exit => Some(Command::Exit),
             Command::Help => {
@@ -135,6 +140,17 @@ impl<'a> ChatSession<'a> {
                 }
             }
             Command::Prompt => None,
+            Command::Set { option, value } => {
+                let color = value.parse().unwrap_or(Color::Blue).into();
+
+                match option.to_lowercase().as_ref() {
+                    "fgcolor" => self.skin.set_fg(color),
+                    "bgcolor" => self.skin.set_bg(color),
+                    _ => eprintln!("--- Unknown option."),
+                }
+
+                None
+            }
         }
     }
 
