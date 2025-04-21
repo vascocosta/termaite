@@ -141,11 +141,18 @@ impl<'a> ChatSession<'a> {
             }
             Command::Prompt => None,
             Command::Set { option, value } => {
-                let color = value.parse().unwrap_or(Color::Blue).into();
-
                 match option.to_lowercase().as_ref() {
-                    "fgcolor" => self.skin.set_fg(color),
-                    "bgcolor" => self.skin.set_bg(color),
+                    "fgcolor" => self
+                        .skin
+                        .set_fg(value.parse().unwrap_or(Color::Blue).into()),
+                    "bgcolor" => self
+                        .skin
+                        .set_bg(value.parse().unwrap_or(Color::Blue).into()),
+                    "ascii" => {
+                        if value.to_lowercase() == "true" {
+                            self.skin.limit_to_ascii()
+                        }
+                    }
                     _ => eprintln!("--- Unknown option."),
                 }
 

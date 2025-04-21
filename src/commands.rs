@@ -12,9 +12,10 @@ pub enum Command {
 impl Command {
     pub fn help() -> Vec<String> {
         vec![
-            "exit".to_string(),
+            "exit/quit".to_string(),
             "help".to_string(),
             "profile [name]".to_string(),
+            "set <option> <value>".to_string(),
         ]
     }
 }
@@ -26,7 +27,7 @@ impl FromStr for Command {
         let command = tokens.next().ok_or(ParseError::CommandNotFound)?;
 
         match command {
-            "exit" => {
+            "exit" | "quit" => {
                 if tokens.next().is_some() {
                     return Err(ParseError::BadArgument);
                 }
