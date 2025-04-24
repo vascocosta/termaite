@@ -147,7 +147,7 @@ impl Default for Profile {
         Self {
             model_name: String::from("gemini-2.0-flash"),
             chars: 4000,
-            system_prompt: Vec::default(),
+            system_prompt: vec![String::from("Please reply in about {chars} chars.")],
         }
     }
 }
