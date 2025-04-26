@@ -1,13 +1,13 @@
 mod chat;
 mod commands;
 mod config;
+mod errors;
 
-use crate::commands::Command;
+use crate::{commands::Command, errors::ApiErrorResponse};
 use anyhow::{Context, Result};
 use chat::ChatSession;
-use config::CONF_FILE;
-use config::Config;
-use gemini_client_rs::GeminiClient;
+use config::{CONF_FILE, Config};
+use gemini_client_rs::{GeminiClient, GeminiError};
 use std::mem;
 
 #[tokio::main]
@@ -35,10 +35,17 @@ async fn main() -> Result<()> {
                 active_profile = Some(name);
                 continue;
             }
-            Err(error) => {
-                eprintln!("{}", error);
-                break;
-            }
+            Err(error) => match error.downcast() {
+                Ok(GeminiError::Api(json)) => {
+                    match serde_json::from_str::<ApiErrorResponse>(&json) {
+                        Ok(api_error_resp) => {
+                            eprintln!("--- {}", api_error_resp.error.message)
+                        }
+                        Err(error) => eprintln!("--- {}", error),
+                    }
+                }
+                _ => eprintln!("--- Unknown error."),
+            },
             _ => (),
         }
     }

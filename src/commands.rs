@@ -1,5 +1,6 @@
+use crate::errors::ParseError;
 use anyhow::Result;
-use std::{error::Error, str::FromStr};
+use std::str::FromStr;
 
 pub enum Command {
     Exit,
@@ -59,23 +60,3 @@ impl FromStr for Command {
         }
     }
 }
-
-#[derive(Debug)]
-pub enum ParseError {
-    CommandNotFound,
-    BadArgument,
-    MissingArgument,
-}
-
-impl std::fmt::Display for ParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let kind = match self {
-            Self::CommandNotFound => "command not found",
-            Self::BadArgument => "bad argument",
-            Self::MissingArgument => "missing argument",
-        };
-        write!(f, "Parse error: {}", kind)
-    }
-}
-
-impl Error for ParseError {}
