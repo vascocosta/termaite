@@ -117,10 +117,10 @@ impl<'a> ChatSession<'a> {
     fn handle_command(&mut self, command: Command) -> Option<Command> {
         match command {
             Command::Exit => Some(Command::Exit),
-            Command::Help => {
+            Command::Help(arg) => {
                 println!("--- Help:");
 
-                for line in &Command::help() {
+                for line in &Command::help(arg) {
                     println!("--- {}", line)
                 }
 

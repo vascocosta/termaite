@@ -4,20 +4,23 @@ use std::str::FromStr;
 
 pub enum Command {
     Exit,
-    Help,
+    Help(Option<String>),
     Profile { name: String },
     Prompt,
     Set { option: String, value: String },
 }
 
 impl Command {
-    pub fn help() -> Vec<String> {
+    pub fn help(arg: Option<String>) -> Vec<String> {
         vec![
-            "exit/quit".to_string(),
-            "help".to_string(),
-            "profile [name]".to_string(),
-            "set <option> <value>".to_string(),
+            "exit/quit - exit this program".to_string(),
+            "help - show this help message".to_string(),
+            "profile [name] - list or change profiles".to_string(),
+            "set <option> <value> - change different settings".to_string(),
         ]
+        .into_iter()
+        .filter(|e| arg.is_none() || arg.as_ref().is_some_and(|arg| e.contains(arg)))
+        .collect()
     }
 }
 
@@ -35,7 +38,7 @@ impl FromStr for Command {
 
                 Ok(Command::Exit)
             }
-            "help" => Ok(Command::Help),
+            "help" => Ok(Command::Help(tokens.next().map(|t| t.to_ascii_lowercase()))),
             "profile" => {
                 let arg = tokens.next().unwrap_or("list");
 
